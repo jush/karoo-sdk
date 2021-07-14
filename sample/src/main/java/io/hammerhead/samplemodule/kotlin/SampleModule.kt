@@ -16,12 +16,14 @@
 package io.hammerhead.samplemodule.kotlin
 
 import android.util.Log
+import com.garmin.fit.Mesg
 import io.hammerhead.samplemodule.kotlin.appval.AppValDataType
 import io.hammerhead.samplemodule.kotlin.customspeed.CustomSpeedDataType
 import io.hammerhead.samplemodule.kotlin.powerhr.PowerHeartRateDataType
 import io.hammerhead.sdk.v0.Module
 import io.hammerhead.sdk.v0.ModuleFactoryI
 import io.hammerhead.sdk.v0.SdkContext
+import io.hammerhead.sdk.v0.card.FitFileListener
 import io.hammerhead.sdk.v0.card.PostRideCard
 import io.hammerhead.sdk.v0.card.RideDetailsI
 import io.hammerhead.sdk.v0.datatype.SdkDataType
@@ -47,7 +49,28 @@ class SampleModule(context: SdkContext) : Module(context) {
 
     override fun postRideCard(details: RideDetailsI): PostRideCard? {
         Timber.i("postRideCard() called")
+        details.registerFitFileListener(OwnFitFileListener(context))
         return RideCard(context, details)
+    }
+
+    override fun onPause(): Boolean {
+        Timber.i("onPause() called")
+        return super.onPause()
+    }
+
+    override fun onResume(): Boolean {
+        Timber.i("onResume() called")
+        return super.onResume()
+    }
+
+    override fun onLap(): Boolean {
+        Timber.i("onLap() called")
+        return super.onLap()
+    }
+
+    override fun onEnd(): Boolean {
+        Timber.i("onEnd() called")
+        return super.onEnd()
     }
 
     companion object {
@@ -64,6 +87,23 @@ class SampleModule(context: SdkContext) : Module(context) {
                 Timber.i("buildModule() called from ${context.packageName}")
                 return SampleModule(context)
             }
+        }
+    }
+}
+
+class OwnFitFileListener(private val context: SdkContext) : FitFileListener {
+    override fun onStartDecoding() {
+        Timber.i("onStartDecoding() called")
+    }
+
+    override fun onEndDecoding() {
+        Timber.i("onEndDecoding() called")
+    }
+
+    override fun onMesg(mesg: Mesg) {
+        Timber.d("onMesg() called with: mesg = ${mesg.name}")
+        mesg.fields.forEach { field ->
+            Timber.d("\tField [${field.name}] = ${field.rawValue}")
         }
     }
 }
